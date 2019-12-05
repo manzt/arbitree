@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/arbitree-react-component/build/index.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/arbitree-react-component/build/index.js ***!
-  \**************************************************************/
+/***/ "../arbitree-react-component/build/index.js":
+/*!****************************************!*\
+  !*** .-react-component/build/index.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1685,7 +1685,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     })).nice();
     var yScale = linear$1().range([height - margin.bottom, margin.top]).domain(extent(data, function (d) {
       return d.y;
-    }).reverse()).nice();
+    })).nice();
     var colorScale = ordinal(tableau20).domain(new Set(data.map(function (d) {
       return d.cluster;
     })));
@@ -1837,7 +1837,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         position: "absolute",
         zIndex: 2,
         top: 0,
-        left: 0
+        left: 0,
+        pointerEvents: "none"
       }
     }, React__default.createElement("g", null, React__default.createElement("g", {
       transform: "translate(".concat(margin.left, ",0)"),
@@ -1918,7 +1919,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var reactR__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! reactR */ "reactR");
 /* harmony import */ var reactR__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(reactR__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var arbitree_react_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! arbitree-react-component */ "./node_modules/arbitree-react-component/build/index.js");
+/* harmony import */ var arbitree_react_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! arbitree-react-component */ "../arbitree-react-component/build/index.js");
 /* harmony import */ var arbitree_react_component__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(arbitree_react_component__WEBPACK_IMPORTED_MODULE_1__);
 
 

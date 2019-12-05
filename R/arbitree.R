@@ -1,15 +1,16 @@
-demo = tibble::tibble(x=rnorm(100), y=rnorm(100), cluster=sample(c("A", "B", "C"), 100, replace=TRUE))
-
 #' <Add Title>
 #'
 #' <Add Description>
-#'
+#' @import Rcpp
 #' @importFrom shiny restoreInput
 #' @importFrom reactR createReactShinyInput
 #' @importFrom htmltools htmlDependency tags
+#' @importFrom Rcpp evalCpp
+#' @useDynLib arbitree
+#' @name arbitree
 #'
 #' @export
-arbitreeInput <- function(inputId, default = demo) {
+arbitreeInput <- function(inputId, reducedDimensions) {
   reactR::createReactShinyInput(
     inputId,
     "arbitree",
@@ -20,7 +21,7 @@ arbitreeInput <- function(inputId, default = demo) {
       package = "arbitree",
       script = "arbitree.js"
     ),
-    jsonlite::toJSON(default),
+    jsonlite::toJSON(reducedDimensions),
     list(),
     htmltools::tags$span
   )

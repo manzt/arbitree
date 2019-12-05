@@ -4,7 +4,11 @@
 \alias{draw_tree}
 \title{Choose cells interactively to subset a cds}
 \usage{
-draw_tree(input)
+draw_tree(
+  cds,
+  reduction_method = c("UMAP", "tSNE", "PCA", "Aligned"),
+  color_cells_by = "cluster"
+)
 }
 \arguments{
 \item{input}{CDS object to subset}

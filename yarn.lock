@@ -929,10 +929,10 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arbitree-react-component@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/arbitree-react-component/-/arbitree-react-component-1.0.1.tgz#0126c8bf85fafd68bd1ac19a4c40e5183f12e5d6"
-  integrity sha512-VJv6F6XN6Bc+VA6PUNRE5D7YdlH6GXofR1Cqig6jXGo898WWMEmgEu+Cs+6tBHF/WKgLHCFrg9Rfvpu4E3/xCw==
+arbitree-react-component@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/arbitree-react-component/-/arbitree-react-component-1.0.2.tgz#fa39c1025fba7afb6838cd99073e34e93a6260c8"
+  integrity sha512-Q41prfeqGHZrNPzH5e+xnUxSDrGzw712yVorL4HJvObuUvUUZpBroYQ3l/hdSozU6GGUNCDhLzKmhp6+pkJiYQ==
   dependencies:
     d3-array "^2.4.0"
     d3-scale "^3.2.1"
