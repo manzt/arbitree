@@ -1,3 +1,5 @@
+demo = tibble::tibble(x=rnorm(100), y=rnorm(100), cluster=sample(c("A", "B", "C"), 100, replace=TRUE))
+
 #' <Add Title>
 #'
 #' <Add Description>
@@ -7,7 +9,7 @@
 #' @importFrom htmltools htmlDependency tags
 #'
 #' @export
-arbitreeInput <- function(inputId, default = "") {
+arbitreeInput <- function(inputId, default = demo) {
   reactR::createReactShinyInput(
     inputId,
     "arbitree",
@@ -18,7 +20,7 @@ arbitreeInput <- function(inputId, default = "") {
       package = "arbitree",
       script = "arbitree.js"
     ),
-    default,
+    jsonlite::toJSON(default),
     list(),
     htmltools::tags$span
   )

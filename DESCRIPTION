@@ -1,10 +1,17 @@
 Package: arbitree
 Type: Package
-Title: Interactive and arbitrary scRNA trajectory analysis
+Title: Interactive and arbitrary scRNA trajectory analysis.
 Version: 1.0
 Date: 2019-12-04
-Author: Trevor Manz & Daniel Weiner
-Maintainer: trevor_manz@g.harvard.edu
+Authors@R:
+    person(given = "Trevor",
+           family = "Manz",
+           role = c("aut", "cre"),
+           email = "trevor_manz@g.harvard.edu")
+    person(given = "Daniel",
+           family = "Weiner",
+           role = c("aut", "cre"),
+           email = "dweiner@broadinstitute.org")
 Description: Hook into typical monocle3 workflow to investigate the effects of priors on trajectory analysis.
 License: MIT
 Imports: 
