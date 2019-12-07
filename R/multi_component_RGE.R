@@ -1,7 +1,8 @@
 multi_component_RGE <- function(cds,
-                                medioids = NULL,
-                                k_init = NULL,
+                                input_medioids = NULL,
+                                k_nn = NULL,
                                 k_louvain = 25,
+                                use_density = FALSE,
                                 scale = FALSE,
                                 reduction_method,
                                 partition_list,
@@ -41,8 +42,7 @@ multi_component_RGE <- function(cds,
     }
     
     if(is.null(ncenter)) {
-      num_clusters_in_partition <-
-        length(unique(clusters(cds)[colnames(X_subset)]))
+      num_clusters_in_partition <- length(unique(clusters(cds)[colnames(X_subset)]))
       num_cells_in_partition = ncol(X_subset)
       curr_ncenter <- cal_ncenter(num_clusters_in_partition, num_cells_in_partition)
       if(is.null(curr_ncenter) || curr_ncenter >= ncol(X_subset)) {
@@ -56,7 +56,10 @@ multi_component_RGE <- function(cds,
       message(paste("Using", curr_ncenter, "nodes for principal graph"))
     
     kmean_res <- NULL
-    if (is.null(medioids)) {
+    
+    if (is.null(input_medioids)) {
+      # Begin typical monocle3 workflow of kmeans followed by knn
+    
       centers <- t(X_subset)[seq(1, ncol(X_subset), length.out=curr_ncenter), , drop = F]
       centers <- centers + matrix(stats::rnorm(length(centers), sd = 1e-10), nrow = nrow(centers)) # add random noise
       
@@ -71,33 +74,39 @@ multi_component_RGE <- function(cds,
       }
       nearest_center <- find_nearest_vertex(t(kmean_res$centers), X_subset, process_targets_in_blocks=TRUE)
       medioids <- X_subset[, unique(nearest_center)]
-      reduced_dim_res <- t(medioids)
-      k <- k_init
-      mat <- t(X_subset)
-      if (is.null(k)) {
-        k <- round(sqrt(nrow(mat))/2)
-        k <- max(10, k)
+      
+      if (use_density) { # True by default
+        # By default, medioids are determined by finding the
+        # most representative cell in subset by highest density (we added this as a parameter)
+        k <- k_nn
+        mat <- t(X_subset)
+        if (is.null(k)) {
+          k <- round(sqrt(nrow(mat))/2)
+          k <- max(10, k)
+        }
+        if (verbose)
+          message("Finding kNN using RANN with ", k, " neighbors")
+        dx <- RANN::nn2(mat, k = min(k, nrow(mat) - 1))
+        nn.index <- dx$nn.idx[, -1]
+        nn.dist <- dx$nn.dists[, -1]
+        
+        if (verbose)
+          message("Calculating the local density for each sample based on kNNs ...")
+        
+        rho <- exp(-rowMeans(nn.dist))
+        mat_df <- as.data.frame(mat)
+        tmp <- mat_df %>% tibble::rownames_to_column() %>%
+          dplyr::mutate(cluster = kmean_res$cluster, density = rho) %>%
+          dplyr::group_by(cluster) %>% dplyr::top_n(n = 1, wt = density) %>%
+          dplyr::arrange(-dplyr::desc(cluster))
+        
+        # select representative cells by highest density
+        medioids <- X_subset[, tmp$rowname]
       }
-      if (verbose)
-        message("Finding kNN using RANN with ", k, " neighbors")
-      dx <- RANN::nn2(mat, k = min(k, nrow(mat) - 1))
-      nn.index <- dx$nn.idx[, -1]
-      nn.dist <- dx$nn.dists[, -1]
       
-      if (verbose)
-        message("Calculating the local density for each sample based on kNNs ...")
-      
-      rho <- exp(-rowMeans(nn.dist))
-      mat_df <- as.data.frame(mat)
-      tmp <- mat_df %>% tibble::rownames_to_column() %>%
-        dplyr::mutate(cluster = kmean_res$cluster, density = rho) %>%
-        dplyr::group_by(cluster) %>% dplyr::top_n(n = 1, wt = density) %>%
-        dplyr::arrange(-dplyr::desc(cluster))
-      
-      # select representative cells by highest density
-      medioids <- X_subset[, tmp$rowname]
     } else {
-      nearest_center <- find_nearest_vertex(medioids, X_subset, process_targets_in_blocks=TRUE)
+      # Find nearest centers to provided medioids rather than those computed above
+      nearest_center <- find_nearest_vertex(input_medioids, X_subset, process_targets_in_blocks=TRUE)
       medioids <- X_subset[, unique(nearest_center)]
     }
     
@@ -157,17 +166,14 @@ multi_component_RGE <- function(cds,
     } else {
       colnames(rge_res$X) <- colnames(X_subset)
       row.names(rge_res$R) <- colnames(X_subset)
-      colnames(rge_res$R) <-
-        paste0('Y_', (ncol(merge_rge_res$Y) + 1):(ncol(merge_rge_res$Y) +
-                                                    ncol(rge_res$Y)), sep = "")
-      colnames(rge_res$Y) <-
-        paste("Y_", (ncol(merge_rge_res$Y) + 1):(ncol(merge_rge_res$Y) +
-                                                   ncol(rge_res$Y)), sep = "")
+      
+      colnames(rge_res$R) <- paste0('Y_', (ncol(merge_rge_res$Y) + 1):(ncol(merge_rge_res$Y) + ncol(rge_res$Y)), sep = "")
+      colnames(rge_res$Y) <- paste("Y_", (ncol(merge_rge_res$Y) + 1):(ncol(merge_rge_res$Y) + ncol(rge_res$Y)), sep = "")
+      
       merge_rge_res$Y <- cbind(merge_rge_res$Y, rge_res$Y)
       merge_rge_res$R <- c(merge_rge_res$R, list(rge_res$R))
       merge_rge_res$stree <- c(merge_rge_res$stree, list(stree))
-      merge_rge_res$objective_vals <- c(merge_rge_res$objective_vals,
-                                        list(rge_res$objective_vals))
+      merge_rge_res$objective_vals <- c(merge_rge_res$objective_vals, list(rge_res$objective_vals))
     }
     
     if(is.null(reducedDimK_coord)) {
@@ -176,20 +182,14 @@ multi_component_RGE <- function(cds,
                                                         which.max))
       cell_name_vec <- colnames(X_subset)
     } else {
-      curr_cell_names <-
-        paste("Y_", (ncol(reducedDimK_coord) + 1):(ncol(reducedDimK_coord) +
-                                                     ncol(rge_res$Y)),
-              sep = "")
-      pr_graph_cell_proj_closest_vertex <-
-        rbind(pr_graph_cell_proj_closest_vertex,
-              matrix(apply(rge_res$R, 1, which.max) + ncol(reducedDimK_coord)))
+      curr_cell_names <- paste("Y_", (ncol(reducedDimK_coord) + 1):(ncol(reducedDimK_coord) + ncol(rge_res$Y)),sep = "")
+      pr_graph_cell_proj_closest_vertex <- rbind(pr_graph_cell_proj_closest_vertex, matrix(apply(rge_res$R, 1, which.max) + ncol(reducedDimK_coord)))
       cell_name_vec <- c(cell_name_vec, colnames(X_subset))
     }
     
     curr_reducedDimK_coord <- rge_res$Y
     dimnames(stree) <- list(curr_cell_names, curr_cell_names)
-    cur_dp_mst <- igraph::graph.adjacency(stree, mode = "undirected",
-                                          weighted = TRUE)
+    cur_dp_mst <- igraph::graph.adjacency(stree, mode = "undirected", weighted = TRUE)
     
     dp_mst <- igraph::graph.union(dp_mst, cur_dp_mst)
     reducedDimK_coord <- cbind(reducedDimK_coord, curr_reducedDimK_coord)
@@ -201,11 +201,9 @@ multi_component_RGE <- function(cds,
   ddrtree_res_Z <- reducedDims(cds)[[reduction_method]]
   ddrtree_res_Y <- reducedDimK_coord
   
-  R <- Matrix::sparseMatrix(i = 1, j = 1, x = 0,
-                            dims = c(ncol(cds), ncol(merge_rge_res$Y)))
-  stree <- Matrix::sparseMatrix(i = 1, j = 1, x = 0,
-                                dims = c(ncol(merge_rge_res$Y),
-                                         ncol(merge_rge_res$Y)))
+  R <- Matrix::sparseMatrix(i = 1, j = 1, x = 0, dims = c(ncol(cds), ncol(merge_rge_res$Y)))
+  stree <- Matrix::sparseMatrix(i = 1, j = 1, x = 0, dims = c(ncol(merge_rge_res$Y), ncol(merge_rge_res$Y)))
+  
   curr_row_id <- 1
   curr_col_id <- 1
   R_row_names <- NULL

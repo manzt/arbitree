@@ -47,8 +47,13 @@
 #' }
 #'
 #' @param cds the cell_data_set upon which to perform this operation
-#' @param k the number of neighbors for knn
-#' @param k_louvain the number of clusters during close_loop
+#' @param k_nn the number of neighbors for knn. 25 by default, hard-coded in monocle3. 
+#' @param k_louvain the number of clusters during \code{close_loop}. 25 by default, 
+#'   hard-coded in monocle3. 
+#' @param use_density whether to use knn density to determine most representative 
+#'   cell in kmeans cluster. When \code{use_density = FALSE}, the cell 
+#'   nearest each kmeans cluster is used as the medioid. Default is TRUE as in 
+#'   monocle3 where it is not a parameter.
 #' @param use_partition logical parameter that determines whether to use
 #'   partitions calculated during \code{cluster_cells} and therefore to learn
 #'   disjoint graph in each partition. When \code{use_partition = FALSE}, a
@@ -63,7 +68,16 @@
 #' @param verbose Whether to emit verbose output during graph learning.
 #' @return an updated cell_data_set object
 #' @export
-learn_graph_ <- function(cds, medioids=NULL, k=NULL, k_louvain = 25, use_partition = TRUE, close_loop = TRUE, learn_graph_control = NULL, verbose = FALSE) {
+arbitree_learn_graph <- function(cds, 
+                         input_medioids = NULL, 
+                         k_nn = 25, 
+                         k_louvain = 25, 
+                         use_density = TRUE,
+                         use_partition = TRUE, 
+                         close_loop = TRUE, 
+                         learn_graph_control = NULL, 
+                         verbose = FALSE) {
+  
   reduction_method <- "UMAP"
   
   # Create defaults
@@ -138,9 +152,10 @@ learn_graph_ <- function(cds, medioids=NULL, k=NULL, k_louvain = 25, use_partiti
   
   multi_tree_DDRTree_res <- multi_component_RGE(
     cds, 
-    medioids = medioids,
-    k_init = k,
+    input_medioids = input_medioids,
+    k_nn = k_nn,
     k_louvain = k_louvain,
+    use_density = use_density,
     scale = scale,
     reduction_method = reduction_method,
     partition_list = partition_list,
