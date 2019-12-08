@@ -55,17 +55,18 @@ a data-dependent policy for adjusting ncentre automatically.”
 In `arbitree_learn_graph`, we have added `ncenter`, `k_nn`, and
 `init_medioids` as parameters.
 
-  - `ncenter`: number of kmeans clusters ultimately landmark cells.
+  - `ncenter`: number of kmeans clusters, which is equal to the number of landmark cells seeding DDRTree because there is one landmark cell per cluster.
   - `k_nn`: number of nearest neighbors used to determine the landmark
     cell with highest local density. In Monocle 3, this parameter is
     hard-coded to 25 and does not scale with the size of the partition.
+  - `use_density`: If `TRUE`, landmark cells are selected based on highest density of connectivity to other cells as determined by k-nearest-neighbors clustering. If `FALSE`, landmark cells are selected based on single cell per partition that is closest to the center of the cluster by low dimensional euclidean distance. Arbitree default is `TRUE`. In Monocle 3, `use_density` is not a parameter because `TRUE` behavior is always called. 
   - `input_medioids`: an (`ndim x centroid`) matrix used to seed the
     DDRTree algorithm. Default is `NULL`. If provided, the landmark
     cells used to initialize DDRTree are determined by the cell which is
     nearest in low dimensional euclidean distance to each provided
     centroid, skipping the kmeans and knn.
 
-We created an widget for drawing arbitrary “iniital states” over the
+We created an widget for drawing arbitrary “initial states” over the
 reduced dimensions using the `draw_tree` function. Usage is as
 follows:
 
@@ -74,3 +75,7 @@ xy_coords <- draw_tree(cds) # opens shiny app and user draws points on UMAP proj
 cds <- arbitree_learn_graph(cds, input_medioids = t(xy_coords))
 plot_cells(cds)
 ```
+
+Created by Trevor Manz & Daniel Weiner
+
+Inspiration from Dr. Peter Kharchenko
