@@ -3,6 +3,7 @@
 export(arbitreeInput)
 export(arbitree_learn_graph)
 export(draw_tree)
+export(find_nearest_vertex)
 export(updateArbitreeInput)
 import(Rcpp)
 importFrom(Rcpp,evalCpp)

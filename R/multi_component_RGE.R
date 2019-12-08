@@ -59,7 +59,6 @@ multi_component_RGE <- function(cds,
     
     if (is.null(input_medioids)) {
       # Begin typical monocle3 workflow of kmeans followed by knn
-    
       centers <- t(X_subset)[seq(1, ncol(X_subset), length.out=curr_ncenter), , drop = F]
       centers <- centers + matrix(stats::rnorm(length(centers), sd = 1e-10), nrow = nrow(centers)) # add random noise
       
@@ -112,9 +111,15 @@ multi_component_RGE <- function(cds,
     
     reduced_dim_res <- t(medioids)
     
-    graph_args <- list(X = X_subset, C0 = medioids, maxiter = maxiter,
-                       eps = eps, L1.gamma = L1.gamma, L1.sigma = L1.sigma,
-                       verbose = verbose)
+    graph_args <- list(
+      X = X_subset, 
+      C0 = medioids, 
+      maxiter = maxiter,
+      eps = eps, 
+      L1.gamma = L1.gamma, 
+      L1.sigma = L1.sigma,
+      verbose = verbose
+    )
     
     rge_res <- do.call(calc_principal_graph, graph_args)
     
@@ -141,6 +146,7 @@ multi_component_RGE <- function(cds,
       )
       stree <- connect_tips_res$stree
     }
+    
     if(prune_graph) {
       if(verbose) {
         message('Running graph pruning ...')
@@ -252,8 +258,8 @@ cal_ncenter <- function(num_cell_communities, ncells,
 #' @param process_targets_in_blocks whether to process the targets points in
 #'   blocks instead
 #' @keywords internal
-find_nearest_vertex <- function(data_matrix, target_points, block_size=50000,
-                                process_targets_in_blocks=FALSE){
+#' @export
+find_nearest_vertex <- function(data_matrix, target_points, block_size=50000, process_targets_in_blocks=FALSE){
   closest_vertex = c()
   if (process_targets_in_blocks == FALSE){
     num_blocks = ceiling(ncol(data_matrix) / block_size)
