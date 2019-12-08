@@ -43,7 +43,7 @@ plot_cells(cds) # plot trajectory
 ```
 
 As described the
-[paper](https://www.nature.com/articles/s41586-019-0969-x),
+[Monocle 3 paper](https://www.nature.com/articles/s41586-019-0969-x),
 “\[Monocle3\] first selects a set of ‘landmark’ cells using by first
 running the `kmeans()` clustering algorithm in R with k equal to the
 value of the `ncenter` argument, which can be passed to `learn_graph()`
@@ -76,6 +76,9 @@ cds <- arbitree_learn_graph(cds, input_medioids = t(xy_coords))
 plot_cells(cds)
 ```
 
+
 Created by Trevor Manz & Daniel Weiner
 
 Inspiration from Dr. Peter Kharchenko
+
+December 2019
