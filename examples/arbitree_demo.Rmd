@@ -1,0 +1,73 @@
+---
+title: "arbitree demo"
+author: "Trevor Manz & Dan Weiner"
+date: "12/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(monocle3)
+# devtools::install_github("manzt/arbitree")
+library(arbitree)
+```
+
+
+## Load example data from Packer et al. 2019
+```{r}
+expression_matrix <- readRDS(url("http://staff.washington.edu/hpliner/data/packer_embryo_expression.rds"))
+cell_metadata <- readRDS(url("http://staff.washington.edu/hpliner/data/packer_embryo_colData.rds"))
+gene_annotation <- readRDS(url("http://staff.washington.edu/hpliner/data/packer_embryo_rowData.rds"))
+
+cds <- new_cell_data_set(expression_matrix, cell_metadata = cell_metadata, gene_metadata = gene_annotation)
+```
+
+## Preprocess & batch correction
+```{r}
+cds <- preprocess_cds(cds, num_dim = 50)
+cds <- align_cds(
+  cds, 
+  alignment_group = "batch", 
+  residual_model_formula_str = "~ bg.300.loading + bg.400.loading + bg.500.1.loading + bg.500.2.loading + bg.r17.loading + bg.b01.loading + bg.b02.loading"
+)
+```
+
+## Dimensionality reduction via UMAP
+```{r}
+cds <- reduce_dimension(cds)
+plot_cells(cds, label_groups_by_cluster=FALSE,  color_cells_by = "cell.type")
+```
+
+## Cluster cells
+```{r}
+cds <- cluster_cells(cds)
+plot_cells(cds, color_cells_by = "partition")
+```
+
+## Trajectory analysis
+```{r}
+cds <- learn_graph(cds, use_partition = FALSE)
+plot_cells(cds)
+```
+
+```{r}
+# specify ncenters
+cds <- arbitree_learn_graph(cds, use_partition = FALSE, learn_graph_control = list(ncenter = 40))
+plot_cells(cds)
+```
+
+```{r}
+# specify knn
+cds <- arbitree_learn_graph(cds, k_nn = 50, use_partition = FALSE)
+plot_cells(cds)
+```
+
+
+```{r}
+# draw points 
+pts <- draw_tree(cds)
+cds <- arbitree_learn_graph(cds, input_medioids = t(pts), use_partition = FALSE)
+plot_cells(cds)
+```
+
